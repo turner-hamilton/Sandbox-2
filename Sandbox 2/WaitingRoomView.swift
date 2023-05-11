@@ -9,6 +9,8 @@ import SwiftUI
 import Firebase
 import FirebaseDatabase
 
+
+
 struct WaitingRoomView: View {
     let topic: String
     let chatId: String
