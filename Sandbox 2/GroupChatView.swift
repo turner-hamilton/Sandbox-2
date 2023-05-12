@@ -10,8 +10,11 @@ import Firebase
 import FirebaseDatabase
 
 struct GroupChatView: View {
+    let backToMain: () -> Void
     let topic: String
     let chatId: String?
+    let navigationHandler: NavigationHandler
+    @Binding var showGroupChatView: Bool
     @Environment(\.presentationMode) var presentationMode
     @State private var username = ""
     @State private var email = ""
@@ -19,7 +22,7 @@ struct GroupChatView: View {
     @State private var messages: [Message] = []
     @State private var messageToSend: String = ""
     @State private var participantCount: Int = 0
-    private let dbRef = Database.database().reference()
+    private let dbRef = Database.database().reference().child("chats")
     
     var body: some View {
         VStack {
@@ -122,10 +125,16 @@ struct GroupChatView: View {
                         dbRef.child("topics").child(chatId).removeValue()
                         dbRef.child("chats").child(chatId).removeValue()
                         print("Chat data deleted")
-                    }
+                    } else {
+                        print("Participant Count: \(participantCount)")
+                }
+            
                     
                     // Dismiss the GroupChatView and navigate back to MainView
-                    presentationMode.wrappedValue.dismiss()
+                    DispatchQueue.main.async {
+                                self.presentationMode.wrappedValue.dismiss()
+                                self.backToMain()
+                    }
                 }
             }
         }
@@ -136,7 +145,7 @@ struct GroupChatView: View {
 
     
     func fetchMessages() {
-        dbRef.child("chats/\(chatId)").observe(.childAdded) { snapshot in
+        dbRef.child("\(chatId)").observe(.childAdded) { snapshot in
             guard let messageData = snapshot.value as? [String: Any],
                   let content = messageData["content"] as? String,
                   let senderId = messageData["senderId"] as? String
@@ -152,7 +161,7 @@ struct GroupChatView: View {
               let currentUser = Auth.auth().currentUser
         else { return }
 
-        let newMessageRef = dbRef.child("chats/\(chatId)").childByAutoId()
+        let newMessageRef = dbRef.child("\(chatId)").childByAutoId()
         let messageData: [String: Any] = [
             "content": messageToSend,
             "senderId": currentUser.uid
@@ -172,7 +181,16 @@ struct GroupChatView: View {
             print("Invalid chatId")
             return
         }
+        
+        dbRef.child("topics").child(topic).child("participants").observe(.value) { snapshot in
+            if let participants = snapshot.value as? [String: Bool] {
+                participantCount = participants.count
+            } else {
+                participantCount = 0
+            }
+        }
     }
+
 
 
     
@@ -185,7 +203,15 @@ struct GroupChatView: View {
     
     struct GroupChatView_Previews: PreviewProvider {
         static var previews: some View {
-            GroupChatView(topic: "Sports", chatId: "sampleChatId")
+            let sampleNavigationHandler = NavigationHandler()
+            return GroupChatView(
+                backToMain: {},
+                topic: "Sports",
+                chatId: "sampleChatId",
+                navigationHandler: sampleNavigationHandler,
+                showGroupChatView: .constant(false)
+            )
         }
     }
+
 }

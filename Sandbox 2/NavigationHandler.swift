@@ -13,6 +13,7 @@ class NavigationHandler: ObservableObject {
     @Published var chatId: String = ""
     @Published var numberOfParticipants: Int = 0
     @Published var topic: String = ""
+    @Published var showGroupChatView: Bool = false // Add this line
     var hasEventListener: Bool = false
     
     func resetNavigation() {
@@ -35,19 +36,32 @@ class NavigationHandler: ObservableObject {
 
 
 
+
 struct NavigationHandlerModifier: ViewModifier {
     @EnvironmentObject var navigationHandler: NavigationHandler
-    
+
+    func navigateToMainView() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            let navigationHandler = NavigationHandler()
+            let rootView = MainView(userIsLoggedIn: .constant(true)).environmentObject(navigationHandler)
+            window.rootViewController = UIHostingController(rootView: rootView)
+            window.makeKeyAndVisible()
+
+        }
+    }
+
     func body(content: Content) -> some View {
         content
-            .background(GroupChatNavigationLink())
+            .background(GroupChatNavigationLink(navigateToMainView: navigateToMainView))
     }
     
     struct GroupChatNavigationLink: View {
         @EnvironmentObject var navigationHandler: NavigationHandler
+        let navigateToMainView: () -> Void
 
         var body: some View {
-            NavigationLink(destination: GroupChatView(topic: navigationHandler.topic, chatId: navigationHandler.chatId).navigationBarBackButtonHidden(true),
+            NavigationLink(destination: GroupChatView(backToMain: navigateToMainView, topic: navigationHandler.topic, chatId: navigationHandler.chatId, navigationHandler: navigationHandler, showGroupChatView: $navigationHandler.showGroupChatView).navigationBarBackButtonHidden(true),
                            isActive: $navigationHandler.navigateToGroupChat) {
                 EmptyView()
             }
@@ -56,8 +70,7 @@ struct NavigationHandlerModifier: ViewModifier {
     }
 }
 
-extension View {
-    func handleNavigation(handler: NavigationHandler) -> some View {
-        self.modifier(NavigationHandlerModifier()).environmentObject(handler)
-    }
-}
+
+
+
+

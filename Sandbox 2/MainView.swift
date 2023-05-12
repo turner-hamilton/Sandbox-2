@@ -10,9 +10,13 @@ import Firebase
 import FirebaseDatabase
 
 struct MainView: View {
+    @EnvironmentObject var navigationHandler: NavigationHandler
+    @State private var chatId: String = ""
     @Binding var userIsLoggedIn: Bool
     @State private var selection = "Sports"
     @State private var navigateToGroupChat = false
+    @State private var showGroupChatView = false
+    @State private var showWaitingRoom = false
     let topics = ["Sports", "Politics", "Movies", "TV Shows", "Video Games"]
     
     var body: some View {
@@ -52,9 +56,9 @@ struct MainView: View {
                     .shadow(radius: 10)
                     .padding(.bottom, 15)
                     
-                    NavigationLink("", destination: GroupChatView(topic: selection, chatId: "").navigationBarBackButtonHidden(true), isActive: $navigateToGroupChat)
-                        .opacity(0)
-
+                    
+                    
+                    
                     Button(action: joinGroupChat) {
                         Text("Go to Group Chat")
                             .font(.title2)
@@ -65,7 +69,7 @@ struct MainView: View {
                             .cornerRadius(50)
                     }
                     .padding(10)
-
+                    
                     
                     Button(action: logout) {
                         Text("Logout")
@@ -82,7 +86,18 @@ struct MainView: View {
                 .navigationBarTitle("Main View", displayMode: .inline)
             }
         }
-    }
+        .sheet(isPresented: $showWaitingRoom) {
+            WaitingRoomView(topic: selection, chatId: chatId)
+                .environmentObject(navigationHandler)
+        }
+        .modifier(NavigationHandlerModifier())
+        .environmentObject(navigationHandler)
+
+
+
+}
+
+    
 
 
     func logout() {
@@ -108,8 +123,8 @@ struct MainView: View {
         // Add the current user's selected topic to the database
         dbRef.child("topics").child(selection).child("participants").child(currentUser.uid).setValue(true)
         
-        // Query the database for the first 3 users with the same topic
-        dbRef.child("topics").child(selection).child("participants").queryLimited(toFirst: 4).observeSingleEvent(of: .value) { snapshot in
+        // Query the database for users with the same topic
+        dbRef.child("topics").child(selection).child("participants").observeSingleEvent(of: .value) { snapshot in
             var groupMembers: [String] = []
             
             // Add the users' uids to the groupMembers array
@@ -119,47 +134,34 @@ struct MainView: View {
                 }
             }
             
+            // Remove the current user's UID from the groupMembers array
+            if let index = groupMembers.firstIndex(of: currentUser.uid) {
+                groupMembers.remove(at: index)
+            }
+            
             // If there are at least 3 other users with the same topic, create or join the group chat
-            if groupMembers.count == 4 {
-                let chatId = groupMembers.sorted().joined(separator: "-")
-                showGroupChat(chatId: chatId) // Pass the 'chatId' parameter here
+            if groupMembers.count >= 3 {
+                let chatId = groupMembers.sorted().joined(separator: "-") + "-" + currentUser.uid
+                navigateToWaitingRoom(chatId: chatId)
             } else {
-                let chatId = groupMembers.sorted().joined(separator: "-")
-                navigateToWaitingRoom(chatId: chatId) // Pass the 'chatId' parameter here
+                let chatId = groupMembers.sorted().joined(separator: "-") + "-" + currentUser.uid
+                navigateToWaitingRoom(chatId: chatId)
             }
         }
     }
-
-
-
-
     
-    func showGroupChat(chatId: String) {
-        DispatchQueue.main.async {
-            navigateToGroupChat = true
-        }
+    
+    func backToMain() {
+        showWaitingRoom = false
     }
-
+    
     func navigateToWaitingRoom(chatId: String) {
-        let navigationHandler = NavigationHandler()
-        navigationHandler.resetNavigation()
-        navigateToView(WaitingRoomView(topic: selection, chatId: chatId).environmentObject(navigationHandler).handleNavigation(handler: navigationHandler))
-    }
+        self.chatId = chatId
+        showWaitingRoom = true
+    }}
 
-
-
-
-    func navigateToView<Content: View>(_ view: Content) {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController = UIHostingController(rootView: view)
-            window.makeKeyAndVisible()
-        }
-    }
-
-    struct MainView_Previews: PreviewProvider {
-        static var previews: some View {
-            MainView(userIsLoggedIn: .constant(true))
-        }
+struct MainView_Previews: PreviewProvider {
+    static var previews: some View {
+        MainView(userIsLoggedIn: .constant(true))
     }
 }

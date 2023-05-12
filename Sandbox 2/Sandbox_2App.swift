@@ -16,17 +16,24 @@ struct ParentView: View {
     }
 }
 
-
 @main
 struct Sandbox_2App: App {
-    
+    @StateObject private var navigationHandler = NavigationHandler()
+    @ObservedObject var appDelegate = AppDelegate()
+
     init() {
         FirebaseApp.configure()
     }
     
     var body: some Scene {
         WindowGroup {
-            ParentView()
+            if appDelegate.isLoggedIn {
+                MainView(userIsLoggedIn: $appDelegate.isLoggedIn)
+                    .environmentObject(navigationHandler)
+            } else {
+                SignUpView()
+                    .environmentObject(navigationHandler)
+            }
         }
     }
 }

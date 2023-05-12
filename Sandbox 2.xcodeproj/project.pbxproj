@@ -31,6 +31,7 @@
 		A2E611112A0ACC55008641D3 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = A2E611102A0ACC55008641D3 /* FirebaseStorage */; };
 		A2E611132A0AEB70008641D3 /* WaitingRoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E611122A0AEB70008641D3 /* WaitingRoomView.swift */; };
 		A2E611152A0AED7B008641D3 /* NavigationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E611142A0AED7B008641D3 /* NavigationHandler.swift */; };
+		A2E611172A0DBCA8008641D3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E611162A0DBCA8008641D3 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +73,7 @@
 		A2E611032A05A567008641D3 /* NavigationPush.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPush.swift; sourceTree = "<group>"; };
 		A2E611122A0AEB70008641D3 /* WaitingRoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingRoomView.swift; sourceTree = "<group>"; };
 		A2E611142A0AED7B008641D3 /* NavigationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHandler.swift; sourceTree = "<group>"; };
+		A2E611162A0DBCA8008641D3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +135,7 @@
 				A2B079A929FB37BB006E940F /* ContentView.swift */,
 				A2E610FF2A044DE9008641D3 /* SignUpView.swift */,
 				A2E611142A0AED7B008641D3 /* NavigationHandler.swift */,
+				A2E611162A0DBCA8008641D3 /* AppDelegate.swift */,
 				A2B079DA29FDBCC2006E940F /* MainView.swift */,
 				A2E611032A05A567008641D3 /* NavigationPush.swift */,
 				A2E610FD2A044A0C008641D3 /* GroupChatView.swift */,
@@ -322,6 +325,7 @@
 				A2E610F12A014EF5008641D3 /* MessageField.swift in Sources */,
 				A2E611042A05A567008641D3 /* NavigationPush.swift in Sources */,
 				A2E611132A0AEB70008641D3 /* WaitingRoomView.swift in Sources */,
+				A2E611172A0DBCA8008641D3 /* AppDelegate.swift in Sources */,
 				A2B079A829FB37BB006E940F /* Sandbox_2App.swift in Sources */,
 				A2E610FE2A044A0C008641D3 /* GroupChatView.swift in Sources */,
 				A2E611002A044DE9008641D3 /* SignUpView.swift in Sources */,

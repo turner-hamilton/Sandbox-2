@@ -10,14 +10,25 @@ import Firebase
 import FirebaseDatabase
 
 
-
 struct WaitingRoomView: View {
     let topic: String
     let chatId: String
-    
+    @EnvironmentObject var navigationHandler: NavigationHandler
     @Environment(\.dismiss) var dismiss
     @State private var navigateToGroupChat = false
     @State private var participantCount = 0
+    
+    func navigateToMainView() {
+        navigateToView(MainView(userIsLoggedIn: .constant(true)))
+    }
+    
+    func navigateToView<Content: View>(_ view: Content) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController = UIHostingController(rootView: view)
+            window.makeKeyAndVisible()
+        }
+    }
     
     var body: some View {
         VStack(spacing: 10) {
@@ -37,8 +48,13 @@ struct WaitingRoomView: View {
         }
         .onAppear(perform: setupListeners)
         .sheet(isPresented: $navigateToGroupChat) {
-            GroupChatView(topic: topic, chatId: chatId).navigationBarBackButtonHidden(true)
+            GroupChatView(backToMain: navigateToMainView, topic: topic, chatId: chatId, navigationHandler: navigationHandler, showGroupChatView: $navigationHandler.showGroupChatView)
+                .navigationBarBackButtonHidden(true)
+                .environmentObject(navigationHandler)
         }
+
+
+
     }
     
     func setupListeners() {
@@ -48,9 +64,12 @@ struct WaitingRoomView: View {
         // Listen for the participant count change
         observeParticipantCount(dbRef: dbRef)
     }
+
+
+    
     
     private func observeParticipantCount(dbRef: DatabaseReference) {
-        dbRef.child("topics").child(chatId).child("participants").observe(.value) { snapshot in
+        dbRef.child("topics").child(topic).child("participants").observe(.value) { snapshot in
             if let participants = snapshot.value as? [String: Bool] {
                 participantCount = participants.count
                 if participantCount == 4 {

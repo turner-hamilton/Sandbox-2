@@ -14,11 +14,13 @@ struct ContentView: View {
     @Binding var userIsLoggedIn: Bool
     @State var viewMessage = "Log In"
     @State var loginMessage = "Log In"
+    @StateObject var navigationHandler = NavigationHandler()
     var handle: AuthStateDidChangeListenerHandle?
     
     var body: some View {
         if userIsLoggedIn {
             MainView(userIsLoggedIn: $userIsLoggedIn)
+                .environmentObject(NavigationHandler())
                 .onDisappear {
                     if let handle = handle {
                         Auth.auth().removeStateDidChangeListener(handle)
