@@ -31,7 +31,7 @@ struct Sandbox_2App: App {
                 MainView(userIsLoggedIn: $appDelegate.isLoggedIn)
                     .environmentObject(navigationHandler)
             } else {
-                SignUpView()
+                SignUpView(userIsLoggedIn: $appDelegate.isLoggedIn)
                     .environmentObject(navigationHandler)
             }
         }
