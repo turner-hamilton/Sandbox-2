@@ -31,6 +31,11 @@ class NavigationHandler: ObservableObject {
         }
         hasEventListener = true
     }
+    
+    func reset() {
+        chatId = ""
+        topic = ""
+    }
 }
 
 

@@ -10,13 +10,13 @@ import Firebase
 import FirebaseDatabase
 
 struct MainView: View {
-    @EnvironmentObject var navigationHandler: NavigationHandler
     @State private var chatId: String = ""
     @Binding var userIsLoggedIn: Bool
     @State private var selection = "Sports"
     @State private var navigateToGroupChat = false
     @State private var showGroupChatView = false
-    @State private var showWaitingRoom = false
+    @State private var isActive: Bool = false
+    @StateObject private var navigationHandler = NavigationHandler()
     let topics = ["Sports", "Politics", "Movies", "TV Shows", "Video Games"]
     
     var body: some View {
@@ -50,46 +50,51 @@ struct MainView: View {
                         .frame(width: 200, height: 140)
                         .clipped()
                         .padding(.bottom)
+                        
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(radius: 10)
+                        .padding(.bottom, 15)
+                        
+                        
+                        
+                        
+                        Button(action: joinGroupChat) {
+                            Text("Go to Group Chat")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .padding(.vertical, 15)
+                                .padding(.horizontal, 30)
+                                .background(Color.blue)
+                                .cornerRadius(50)
+                        }
+                        .padding(10)
+                        
+                        
+                        Button(action: logout) {
+                            Text("Logout")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .padding(.vertical, 15)
+                                .padding(.horizontal, 30)
+                                .background(Color.red)
+                                .cornerRadius(50)
+                        }
+                        .padding(.top, 10)
                     }
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 10)
-                    .padding(.bottom, 15)
+                    .padding(.horizontal)
+                    .navigationBarTitle("Main View", displayMode: .inline)
                     
                     
-                    
-                    
-                    Button(action: joinGroupChat) {
-                        Text("Go to Group Chat")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 15)
-                            .padding(.horizontal, 30)
-                            .background(Color.blue)
-                            .cornerRadius(50)
+                    NavigationLink(destination: WaitingRoomView(), isActive: $isActive) {
+                        EmptyView()
                     }
-                    .padding(10)
-                    
-                    
-                    Button(action: logout) {
-                        Text("Logout")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 15)
-                            .padding(.horizontal, 30)
-                            .background(Color.red)
-                            .cornerRadius(50)
-                    }
-                    .padding(.top, 10)
                 }
-                .padding(.horizontal)
-                .navigationBarTitle("Main View", displayMode: .inline)
             }
+            
         }
-        .sheet(isPresented: $showWaitingRoom) {
-            WaitingRoomView()
-                .environmentObject(navigationHandler)
-        }
+        .environmentObject(navigationHandler)
+
     }
         
         
@@ -147,14 +152,16 @@ struct MainView: View {
         }
         
         
-        func backToMain() {
-            showWaitingRoom = false
-        }
+    func backToMain() {
+        isActive = false
+        navigationHandler.reset()
+    }
+
         
-        func navigateToWaitingRoom(chatId: String) {
-            self.navigationHandler.chatId = chatId
-            self.navigationHandler.topic = selection
-            showWaitingRoom = true
+    func navigateToWaitingRoom(chatId: String) {
+        self.navigationHandler.chatId = chatId
+        self.navigationHandler.topic = selection
+        isActive = true
         }
     }
     
