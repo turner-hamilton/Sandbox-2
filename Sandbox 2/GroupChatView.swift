@@ -11,8 +11,8 @@ import FirebaseDatabase
 
 struct GroupChatView: View {
     let backToMain: () -> Void
-    let topic: String
-    let chatId: String?
+    var topic: String? { navigationHandler.topic }
+    var chatId: String? { navigationHandler.chatId }
     let navigationHandler: NavigationHandler
     @Binding var showGroupChatView: Bool
     @Environment(\.presentationMode) var presentationMode
@@ -26,9 +26,9 @@ struct GroupChatView: View {
     
     var body: some View {
         VStack {
-            Text("Topic: \(topic)")
+            Text("Topic: \(topic ?? "Unknown")")
                 .font(.title2)
-
+            
             Button(action: leaveChat) {
                 Text("Leave Chat")
                     .fontWeight(.bold)
@@ -39,14 +39,14 @@ struct GroupChatView: View {
                     .cornerRadius(8)
             }
             .padding(.top)
-
+            
             // Insert the participant count text here
             HStack {
                 Text("Participants: \(participantCount)")
                     .font(.caption)
                     .padding(.top)
                     .padding(.leading)
-
+                
                 Spacer()
             }
             // New ScrollView with updated message display logic
@@ -71,14 +71,14 @@ struct GroupChatView: View {
                     }
                 }
             }
-
+            
             // The rest of the GroupChatView body remains the same
             HStack {
                 TextField("Type a message...", text: $messageToSend)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .frame(minHeight: 30)
                     .padding(.horizontal)
-
+                
                 Button(action: sendMessage) {
                     Text("Send")
                         .fontWeight(.bold)
@@ -101,16 +101,12 @@ struct GroupChatView: View {
     }
     
     func leaveChat() {
-        guard let currentUser = Auth.auth().currentUser else {
-            print("User not logged in")
+        guard let currentUser = Auth.auth().currentUser,
+              let chatId = chatId else {
+            print("User not logged in or invalid chatId")
             return
         }
-        
-        // Unwrap the chatId safely
-        guard let chatId = chatId, !chatId.isEmpty else {
-            print("Invalid chatId")
-            return
-        }
+    
 
         let dbRef = Database.database().reference()
 
@@ -145,6 +141,8 @@ struct GroupChatView: View {
 
     
     func fetchMessages() {
+        guard let chatId = chatId else { return }
+
         dbRef.child("\(chatId)").observe(.childAdded) { snapshot in
             guard let messageData = snapshot.value as? [String: Any],
                   let content = messageData["content"] as? String,
@@ -158,8 +156,8 @@ struct GroupChatView: View {
 
     func sendMessage() {
         guard !messageToSend.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              let currentUser = Auth.auth().currentUser
-        else { return }
+              let currentUser = Auth.auth().currentUser,
+              let chatId = chatId else { return }
 
         let newMessageRef = dbRef.child("\(chatId)").childByAutoId()
         let messageData: [String: Any] = [
@@ -177,8 +175,8 @@ struct GroupChatView: View {
         }
     }
     func fetchParticipantCount() {
-        guard let chatId = chatId, !chatId.isEmpty else {
-            print("Invalid chatId")
+        guard let chatId = chatId, let topic = topic else {
+            print("Invalid chatId or topic")
             return
         }
         
@@ -206,12 +204,9 @@ struct GroupChatView: View {
             let sampleNavigationHandler = NavigationHandler()
             return GroupChatView(
                 backToMain: {},
-                topic: "Sports",
-                chatId: "sampleChatId",
                 navigationHandler: sampleNavigationHandler,
                 showGroupChatView: .constant(false)
             )
         }
     }
-
 }

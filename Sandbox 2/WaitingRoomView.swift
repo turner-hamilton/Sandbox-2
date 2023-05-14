@@ -9,11 +9,10 @@ import SwiftUI
 import Firebase
 import FirebaseDatabase
 
-
 struct WaitingRoomView: View {
-    let topic: String
-    let chatId: String
     @EnvironmentObject var navigationHandler: NavigationHandler
+    var topic: String { navigationHandler.topic }
+    var chatId: String { navigationHandler.chatId }
     @Environment(\.dismiss) var dismiss
     @State private var navigateToGroupChat = false
     @State private var participantCount = 0
@@ -48,13 +47,10 @@ struct WaitingRoomView: View {
         }
         .onAppear(perform: setupListeners)
         .sheet(isPresented: $navigateToGroupChat) {
-            GroupChatView(backToMain: navigateToMainView, topic: topic, chatId: chatId, navigationHandler: navigationHandler, showGroupChatView: $navigationHandler.showGroupChatView)
+            GroupChatView(backToMain: navigateToMainView, navigationHandler: navigationHandler, showGroupChatView: $navigationHandler.showGroupChatView)
                 .navigationBarBackButtonHidden(true)
                 .environmentObject(navigationHandler)
         }
-
-
-
     }
     
     func setupListeners() {
@@ -64,9 +60,6 @@ struct WaitingRoomView: View {
         // Listen for the participant count change
         observeParticipantCount(dbRef: dbRef)
     }
-
-
-    
     
     private func observeParticipantCount(dbRef: DatabaseReference) {
         dbRef.child("topics").child(topic).child("participants").observe(.value) { snapshot in
@@ -83,6 +76,7 @@ struct WaitingRoomView: View {
 
 struct WaitingRoomView_Previews: PreviewProvider {
     static var previews: some View {
-        WaitingRoomView(topic: "Sports", chatId: "testChatId")
+        WaitingRoomView()
+            .environmentObject(NavigationHandler())
     }
 }

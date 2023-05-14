@@ -61,7 +61,7 @@ struct NavigationHandlerModifier: ViewModifier {
         let navigateToMainView: () -> Void
 
         var body: some View {
-            NavigationLink(destination: GroupChatView(backToMain: navigateToMainView, topic: navigationHandler.topic, chatId: navigationHandler.chatId, navigationHandler: navigationHandler, showGroupChatView: $navigationHandler.showGroupChatView).navigationBarBackButtonHidden(true),
+            NavigationLink(destination: GroupChatView(backToMain: navigateToMainView, navigationHandler: navigationHandler, showGroupChatView: $navigationHandler.showGroupChatView).navigationBarBackButtonHidden(true),
                            isActive: $navigationHandler.navigateToGroupChat) {
                 EmptyView()
             }

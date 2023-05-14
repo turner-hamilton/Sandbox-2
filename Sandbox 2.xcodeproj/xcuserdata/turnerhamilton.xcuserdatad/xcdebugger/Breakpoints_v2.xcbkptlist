@@ -14,8 +14,8 @@
             filePath = "Sandbox 2/GroupChatView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "147"
-            endingLineNumber = "147"
+            startingLineNumber = "143"
+            endingLineNumber = "143"
             landmarkName = "fetchMessages()"
             landmarkType = "7">
          </BreakpointContent>

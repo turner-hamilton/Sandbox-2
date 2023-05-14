@@ -87,81 +87,81 @@ struct MainView: View {
             }
         }
         .sheet(isPresented: $showWaitingRoom) {
-            WaitingRoomView(topic: selection, chatId: chatId)
+            WaitingRoomView()
                 .environmentObject(navigationHandler)
         }
-        .modifier(NavigationHandlerModifier())
-        .environmentObject(navigationHandler)
-
-
-
-}
-
-    
-
-
-    func logout() {
-        print("Logout button tapped")
-        do {
-            try Auth.auth().signOut()
-            userIsLoggedIn = false
-        } catch {
-            print("Error signing out:", error.localizedDescription)
-        }
     }
-
-    func joinGroupChat() {
-        // Check if the user is logged in
-        guard let currentUser = Auth.auth().currentUser else {
-            print("User not logged in")
-            return
+        
+        
+        
+        
+        
+        func logout() {
+            print("Logout button tapped")
+            do {
+                try Auth.auth().signOut()
+                userIsLoggedIn = false
+            } catch {
+                print("Error signing out:", error.localizedDescription)
+            }
         }
         
-        // Reference to the realtime database
-        let dbRef = Database.database().reference()
-        
-        // Add the current user's selected topic to the database
-        dbRef.child("topics").child(selection).child("participants").child(currentUser.uid).setValue(true)
-        
-        // Query the database for users with the same topic
-        dbRef.child("topics").child(selection).child("participants").observeSingleEvent(of: .value) { snapshot in
-            var groupMembers: [String] = []
+        func joinGroupChat() {
+            // Check if the user is logged in
+            guard let currentUser = Auth.auth().currentUser else {
+                print("User not logged in")
+                return
+            }
             
-            // Add the users' uids to the groupMembers array
-            for child in snapshot.children {
-                if let childSnapshot = child as? DataSnapshot {
-                    groupMembers.append(childSnapshot.key)
+            // Reference to the realtime database
+            let dbRef = Database.database().reference()
+            
+            // Add the current user's selected topic to the database
+            dbRef.child("topics").child(selection).child("participants").child(currentUser.uid).setValue(true)
+            
+            // Query the database for users with the same topic
+            dbRef.child("topics").child(selection).child("participants").observeSingleEvent(of: .value) { snapshot in
+                var groupMembers: [String] = []
+                
+                // Add the users' uids to the groupMembers array
+                for child in snapshot.children {
+                    if let childSnapshot = child as? DataSnapshot {
+                        groupMembers.append(childSnapshot.key)
+                    }
+                }
+                
+                // Remove the current user's UID from the groupMembers array
+                if let index = groupMembers.firstIndex(of: currentUser.uid) {
+                    groupMembers.remove(at: index)
+                }
+                
+                // If there are at least 3 other users with the same topic, create or join the group chat
+                if groupMembers.count >= 3 {
+                    let chatId = groupMembers.sorted().joined(separator: "-") + "-" + currentUser.uid
+                    navigateToWaitingRoom(chatId: chatId)
+                } else {
+                    let chatId = groupMembers.sorted().joined(separator: "-") + "-" + currentUser.uid
+                    navigateToWaitingRoom(chatId: chatId)
                 }
             }
-            
-            // Remove the current user's UID from the groupMembers array
-            if let index = groupMembers.firstIndex(of: currentUser.uid) {
-                groupMembers.remove(at: index)
-            }
-            
-            // If there are at least 3 other users with the same topic, create or join the group chat
-            if groupMembers.count >= 3 {
-                let chatId = groupMembers.sorted().joined(separator: "-") + "-" + currentUser.uid
-                navigateToWaitingRoom(chatId: chatId)
-            } else {
-                let chatId = groupMembers.sorted().joined(separator: "-") + "-" + currentUser.uid
-                navigateToWaitingRoom(chatId: chatId)
-            }
+        }
+        
+        
+        func backToMain() {
+            showWaitingRoom = false
+        }
+        
+        func navigateToWaitingRoom(chatId: String) {
+            self.navigationHandler.chatId = chatId
+            self.navigationHandler.topic = selection
+            showWaitingRoom = true
         }
     }
     
-    
-    func backToMain() {
-        showWaitingRoom = false
+    struct MainView_Previews: PreviewProvider {
+        static var previews: some View {
+            MainView(userIsLoggedIn: .constant(true))
+                .environmentObject(NavigationHandler())
+        }
     }
-    
-    func navigateToWaitingRoom(chatId: String) {
-        self.chatId = chatId
-        showWaitingRoom = true
-    }}
 
-struct MainView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainView(userIsLoggedIn: .constant(true))
-    }
-}

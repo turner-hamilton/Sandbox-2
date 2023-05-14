@@ -15,6 +15,8 @@ struct SignUpView: View {
     @State var signUpMessage = "Sign up"
     @State var viewMessage = "Sign Up"
     @State private var isUserLoggedIn = false
+    @EnvironmentObject var navigationHandler: NavigationHandler
+
 
 
     var body: some View {
@@ -97,12 +99,14 @@ struct SignUpView: View {
     }
     func switchToContentView() {
         let contentView = ContentView(userIsLoggedIn: $isUserLoggedIn)
+            .environmentObject(navigationHandler)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             window.rootViewController = UIHostingController(rootView: contentView)
             window.makeKeyAndVisible()
         }
     }
+
 
 }
 
